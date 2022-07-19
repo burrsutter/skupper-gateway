@@ -2,7 +2,9 @@
 
 Allowing a remote Azure Kubernetes cluster to connect back into the laptop's local microservice and on-premises database.
 
-A migration to a public cloud provider does not have to be an all-or-nothing scenario.  Skupper allows exposing on-premises services (e.g. databases, applications) out to a remote Kubernetes cluster.
+A migration to a public cloud provider does not have to be an all-or-nothing scenario.  Skupper allows exposing on-premises services (e.g. databases, applications) out to a remote Kubernetes cluster.  
+
+You can also leverage Quarkus's live reload coding feature or debugger while remote additional Kubernetes hosted pods are interacting with your local version of another microservice.
 
 ![Diagram](images/diagram.png)
 
@@ -134,28 +136,55 @@ chmod +x *.sh
 Start up your favorite Quarkus, Spring Boot or whatever app on port 8080
 
 ```
-git clone 
+git clone https://github.com/burrsutter/skupper-gateway
+
+cd skupper-gateway/pgcrud
+
+mvn quarkus:dev
 ```
 
 ## On Cluster Java test
 
 ```
 kubectl exec -it deploy/skupper-router -c router -- bash
-
-curl localhost-java:8080/hello
 ```
 
-# On Cluster postgres test
+```
+curl localhost-java:8080/hello
+Hello from RESTEasy Reactive
+```
 
-kubectl create deployment psql-client --image=docker.io/burrsutter/psql-client:intel
 
-# On-premises Clean up
+```
+curl localhost-java:8080/stuff
+Stuff: 1
+```
 
+```
+curl localhost-java:8080/stuff/add
+Added:3
+```
+
+## On laptop
+
+![pgAdmin](images/pgAdmin.png)
+
+
+## On-premises Clean up
+
+```
 ./remove.sh -t docker
 
 rm -rf gateway
+```
 
-# On Cluster Clean up
+## On Cluster Clean up
 
+```
 skupper delete service localhost-db
 skupper delete service localhost-java
+```
+
+```
+az aks delete --resource-group myAKSTokyoResourceGroup --name tokyo
+```
