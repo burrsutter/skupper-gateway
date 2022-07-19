@@ -8,6 +8,28 @@ You can also leverage Quarkus's live reload coding feature or debugger while rem
 
 ![Diagram](images/diagram.png)
 
+## Pre-reqs
+
+### Skills
+
+Assumes you are highly skilled at Kubernetes and fairly skilled at running Java applications as well as a Postgres database
+
+### Tools on the laptop
+
+```
+kubectl
+```
+
+```
+skupper
+```
+
+
+```
+docker 
+```
+
+I am using Docker Desktop
 
 ## On Cluster (KUBECONFIG)
 
@@ -165,9 +187,12 @@ curl localhost-java:8080/stuff/add
 Added:3
 ```
 
-## On laptop
+## On-premises/laptop
 
 ![pgAdmin](images/pgAdmin.png)
+
+
+## On Cluster
 
 
 ## On-premises Clean up
