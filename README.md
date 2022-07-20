@@ -1,10 +1,10 @@
 # Skupper Gateway
 
-Allowing a remote Azure Kubernetes cluster to connect back into the laptop's local microservice and on-premises database.
+Allowing a remote Azure Kubernetes cluster to connect back into the on-premises/laptop's local microservice and database.
 
-A migration to a public cloud provider does not have to be an all-or-nothing scenario.  Skupper allows exposing on-premises services (e.g. databases, applications) out to a remote Kubernetes cluster.  
+A migration to a public cloud provider does not have to be an all-or-nothing scenario.  Skupper allows exposing of on-premises services (e.g. databases, applications) out to a remote Kubernetes cluster.  
 
-You can also leverage Quarkus's live reload coding feature or debugger while remote additional Kubernetes hosted pods are interacting with your local version of another microservice.
+You can also leverage Quarkus's live reload coding feature or debugger while remote  Kubernetes hosted pods are interacting with your local microservices.
 
 ![Diagram](images/diagram.png)
 
@@ -31,6 +31,8 @@ docker
 
 I am using Docker Desktop
 
+
+
 ## On Cluster (KUBECONFIG)
 
 This creates an AKS in Japan but any OpenShift or Kubernetes cluster would work
@@ -46,13 +48,19 @@ az aks create --resource-group myAKSTokyoResourceGroup --name tokyo -s Standard_
 ```
 
 ```
-az aks get-credentials --resource-group myAKSTokyoResourceGroup --name tokyo --file $KUBECONFIG
+az aks get-credentials --resource-group myAKSTokyoResourceGroup --name tokyo --file $KUBECONFIG --overwrite
+```
+
+```
+kubectl get nodes
+NAME                                STATUS   ROLES   AGE     VERSION
+aks-nodepool1-11151165-vmss000000   Ready    agent   7m32s   v1.22.11
+aks-nodepool1-11151165-vmss000001   Ready    agent   7m30s   v1.22.11
 ```
 
 ```
 kubectl create namespace hybrid
 kubectl config set-context --current --namespace=hybrid
-
 ```
 
 ```
@@ -65,41 +73,27 @@ client version                 1.0.2
 skupper init
 ```
 
-Create the "proxy" Kubernetes Services that will actually be implmented on-premises
-
 ```
-skupper service create localhost-db 5432
-skupper service create localhost-java 8080 --mapping http
-```
-
-```
-kubectl get services 
+kubectl get services
 NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)                           AGE
-localhost-db           ClusterIP      10.0.206.197   <none>          5432/TCP                          101m
-localhost-java         ClusterIP      10.0.149.105   <none>          8080/TCP                          101m
-skupper                LoadBalancer   10.0.57.243    20.89.191.135   8080:32324/TCP,8081:32516/TCP     122m
-skupper-router         LoadBalancer   10.0.28.159    20.89.189.135   55671:30785/TCP,45671:30239/TCP   122m
-skupper-router-local   ClusterIP      10.0.31.114    <none>          5671/TCP                          122m
+skupper                LoadBalancer   10.0.252.120   20.89.189.119   8080:31920/TCP,8081:31912/TCP     25s
+skupper-router         LoadBalancer   10.0.208.189   20.89.187.138   55671:31311/TCP,45671:31132/TCP   37s
+skupper-router-local   ClusterIP      10.0.189.166   <none>          5671/TCP                          38s
 ```
 
 ```
 skupper status
-Skupper is enabled for namespace "hybrid" in interior mode. It is connected to 1 other site. It has 2 exposed services.
-The site console url is:  https://20.89.191.135:8080
+Skupper is enabled for namespace "hybrid" in interior mode. It is not connected to any other sites. It has no exposed services.
+The site console url is:  https://20.89.189.119:8080
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 ```
 
-```
-skupper service status
-Services exposed through Skupper:
-├─ localhost-db (tcp port 5432)
-╰─ localhost-java (http port 8080)
-```
+## Expose laptop services
 
 Create the configuration/definition file to define which services will be re-routed
 
 ```
-cat <<EOF >>  localhost-services.yaml
+cat <<EOF >  localhost-services.yaml
 name: localhost-services 
 bindings:
     - name: db 
@@ -128,29 +122,53 @@ EOF
 ```
 
 ```
-mkdir -p bundle/localhost-services
+docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 ```
 
 ```
-skupper gateway generate-bundle localhost-services.yaml ./bundle/localhost-services
-```
-
-## On-premises/laptop (no KUBECONFIG)
-
-If the bundle file was on another machine, get it onto your laptop/on-premises server :-)
-
-```
-mkdir gateway
-
-tar -xvf ./bundle/localhost-services/localhost-services.tar.gz --directory gateway
-
-cd gateway
-
-chmod +x *.sh
+skupper gateway init --config localhost-services.yaml --type docker
 ```
 
 ```
-./launch.sh -t docker
+Skupper gateway: 'silversurfer.local-burr'. Use 'skupper gateway status' to get more information.
+```
+
+```
+skupper gateway status
+No gateway definition found on cluster
+╰─  A gateway of type docker is detected on local host.
+```
+
+Create the "proxy" Kubernetes Services that will actually be implmented on-premises
+
+```
+skupper service create localhost-db 5432
+skupper service create localhost-java 8080 --mapping http
+```
+
+```
+kubectl get services 
+NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)                           AGE
+localhost-db           ClusterIP      10.0.7.121     <none>          5432/TCP                          12s
+localhost-java         ClusterIP      10.0.129.218   <none>          8080/TCP                          7s
+skupper                LoadBalancer   10.0.252.120   20.89.189.119   8080:31920/TCP,8081:31912/TCP     4m21s
+skupper-router         LoadBalancer   10.0.208.189   20.89.187.138   55671:31311/TCP,45671:31132/TCP   4m33s
+skupper-router-local   ClusterIP      10.0.189.166   <none>          5671/TCP                          4m34s
+```
+
+```
+skupper status
+Skupper is enabled for namespace "hybrid" in interior mode. It is connected to 1 other site. It has 2 exposed services.
+The site console url is:  https://20.89.191.135:8080
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+```
+
+```
+skupper service status
+Services exposed through Skupper:
+├─ localhost-db (tcp port 5432)
+╰─ localhost-java (http port 8080)
 ```
 
 ## On-premises/laptop
@@ -164,6 +182,15 @@ cd skupper-gateway/pgcrud
 
 mvn quarkus:dev
 ```
+
+```
+curl localhost:8080/stuff
+```
+
+```
+Stuff: 1
+```
+
 
 ## On Cluster Java test
 
@@ -211,5 +238,44 @@ skupper delete service localhost-java
 ```
 
 ```
+skupper gateway delete
+```
+
+```
+rm -rf ~/.local/share/skupper
+```
+
+```
 az aks delete --resource-group myAKSTokyoResourceGroup --name tokyo
 ```
+
+#  Bundle Way
+
+## Bundle Creation for exposing on-premises AND cluster services
+
+```
+mkdir -p bundle/localhost-services
+```
+
+```
+skupper gateway generate-bundle localhost-services.yaml ./bundle/localhost-services
+```
+
+## On-premises/laptop (no KUBECONFIG)
+
+If the bundle file was on another machine, get it onto your laptop/on-premises server :-)
+
+```
+mkdir gateway
+
+tar -xvf ./bundle/localhost-services/localhost-services.tar.gz --directory gateway
+
+cd gateway
+
+chmod +x *.sh
+```
+
+```
+./launch.sh -t docker
+```
+
