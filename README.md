@@ -102,9 +102,9 @@ bindings:
         address: localhost-db:5432 
         protocol: tcp 
         ports:
-            - 5432 
+           - 5432 
       target_ports:
-        - 5432 
+           - 5432 
     - name: java
       host: host.docker.internal
       service:
@@ -112,7 +112,7 @@ bindings:
         protocol: http
         ports:
            - 8080
-        target_ports:
+      target_ports:
            - 8080
 qdr-listeners:
     - name: amqp
