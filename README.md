@@ -126,24 +126,38 @@ docker ps
 CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 ```
 
+
+Note: Alternative `skupper gateway init --config localhost-services.yaml --type docker` but it currently does not work with http endpoints
+
+
 ```
-skupper gateway init --config localhost-services.yaml --type docker
+mkdir -p bundle/localhost-services
 ```
 
 ```
-Skupper gateway: 'silversurfer.local-burr'. Use 'skupper gateway status' to get more information.
+skupper gateway generate-bundle localhost-services.yaml ./bundle/localhost-services
+```
+
+If the bundle file was on another machine, get it onto your laptop/on-premises server
+
+```
+mkdir gateway
+
+tar -xvf ./bundle/localhost-services/localhost-services.tar.gz --directory gateway
+
+cd gateway
+
+chmod +x *.sh
 ```
 
 ```
-skupper gateway status
-No gateway definition found on cluster
-╰─  A gateway of type docker is detected on local host.
+./launch.sh -t docker
 ```
 
 ```
 docker ps
 CONTAINER ID   IMAGE                                  COMMAND                  CREATED         STATUS         PORTS     NAMES
-8302511c8383   quay.io/skupper/skupper-router:2.0.2   "/home/skrouterd/bin…"   4 minutes ago   Up 4 minutes             silversurfer.local-burr
+e98e8c3681e3   quay.io/skupper/skupper-router:2.0.2   "/home/skrouterd/bin…"   6 seconds ago   Up 5 seconds             localhost-services
 ```
 
 Create the "proxy" Kubernetes Services that will actually be implmented on-premises
@@ -252,36 +266,15 @@ rm -rf ~/.local/share/skupper
 ```
 
 ```
+rm -rf bundle/
+rm -rf gateway/
+```
+
+
+```
 az aks delete --resource-group myAKSTokyoResourceGroup --name tokyo
 ```
 
-#  Bundle Way
 
-## Bundle Creation for exposing on-premises AND cluster services
 
-```
-mkdir -p bundle/localhost-services
-```
-
-```
-skupper gateway generate-bundle localhost-services.yaml ./bundle/localhost-services
-```
-
-## On-premises/laptop (no KUBECONFIG)
-
-If the bundle file was on another machine, get it onto your laptop/on-premises server :-)
-
-```
-mkdir gateway
-
-tar -xvf ./bundle/localhost-services/localhost-services.tar.gz --directory gateway
-
-cd gateway
-
-chmod +x *.sh
-```
-
-```
-./launch.sh -t docker
-```
 

@@ -41,23 +41,23 @@ public class StuffResource {
 
         Person person = new Person();
         person.name = "Burr";
-        person.birth = LocalDate.of(1960, Month.JANUARY, 1);
+        person.birth = LocalDate.of(1970, Month.JANUARY, 1);
         person.status = Status.Alive;
         person.persist();
 
         Person person2 = new Person();
         person2.name = "Hugo";
-        person2.birth = LocalDate.of(1960, Month.FEBRUARY, 2);
+        person2.birth = LocalDate.of(1980, Month.FEBRUARY, 2);
         person2.status = Status.Alive;
         person2.persist();
         
         Person person3 = new Person();
         person3.name = "Eric";
-        person3.birth = LocalDate.of(1980, Month.MARCH, 3);
+        person3.birth = LocalDate.of(1990, Month.MARCH, 3);
         person3.status = Status.Alive;
         person3.persist();
 
-        return "Added:" + cnt;
+        return "Added Records";
     }
 
     @GET
