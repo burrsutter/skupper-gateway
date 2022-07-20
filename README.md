@@ -140,6 +140,12 @@ No gateway definition found on cluster
 ╰─  A gateway of type docker is detected on local host.
 ```
 
+```
+docker ps
+CONTAINER ID   IMAGE                                  COMMAND                  CREATED         STATUS         PORTS     NAMES
+8302511c8383   quay.io/skupper/skupper-router:2.0.2   "/home/skrouterd/bin…"   4 minutes ago   Up 4 minutes             silversurfer.local-burr
+```
+
 Create the "proxy" Kubernetes Services that will actually be implmented on-premises
 
 ```
