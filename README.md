@@ -212,7 +212,7 @@ Stuff: 1
 ```
 
 
-## On Cluster Java test
+## On Cluster Tests
 
 ```
 kubectl exec -it deploy/skupper-router -c router -- bash
@@ -231,8 +231,29 @@ Stuff: 1
 
 ```
 curl localhost-java:8080/stuff/add
-Added:3
+Added Records
 ```
+
+```
+kubectl exec -it deploy/psql -- sh
+```
+
+```
+psql
+\l
+\dt
+select * from person;
+```
+
+```
+ id |   birth    | name | status
+----+------------+------+--------
+  3 | 1970-01-01 | Burr |      0
+  4 | 1980-02-02 | Hugo |      0
+  5 | 1990-03-03 | Eric |      0
+(3 rows)
+```
+
 
 ## On-premises/laptop
 

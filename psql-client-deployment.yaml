@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: psql
-        image: docker.io/truemark/postgres-client:12
+        image: docker.io/burrsutter/psql-client
         env:
           - name: PGDATABASE
             value: mydatabase
@@ -33,3 +33,6 @@ spec:
           limits:
             memory: "300Mi"
             cpu: "250m" 
+        stdin: true
+        tty: true
+        command: ["/bin/sh"]
