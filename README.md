@@ -90,7 +90,7 @@ The credentials for internal console-auth mode are held in secret: 'skupper-cons
 
 ## Expose laptop services
 
-Create the configuration/definition file to define which services will be re-routed
+Create the configuration/definition file to define which services will be exposed to the overall Skupper network
 
 ```
 cat <<EOF >  localhost-services.yaml

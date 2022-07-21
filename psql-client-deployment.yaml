@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: psql
+  name: psql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: psql
+  template:
+    metadata:
+      labels:
+        app: psql
+    spec:
+      containers:
+      - name: psql
+        image: docker.io/truemark/postgres-client:12
+        env:
+          - name: PGDATABASE
+            value: mydatabase
+          - name: PGUSER
+            value: myuser
+          - name: PGPASSWORD
+            value: mypassword
+          - name: PGHOST
+            value: localhost-db
+        resources:
+          requests: 
+            memory: "300Mi" 
+            cpu: "250m" 
+          limits:
+            memory: "300Mi"
+            cpu: "250m" 
